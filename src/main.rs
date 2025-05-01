@@ -33,9 +33,13 @@ struct Cli {
     #[clap(long, short, action = ArgAction::Set)]
     color: Option<bool>,
 
-    /// Disable the printing of capture group names (if using regex)
-    no_group_names: bool,
+    /// Disable the labeling of capture group names
     #[clap(long, requires = "regex")]
+    no_group_labels: bool,
+
+    /// Do not label unnamed capture groups
+    #[clap(long, requires = "regex", conflicts_with = "no_group_labels")]
+    ignore_unnamed_groups: bool,
 }
 
 fn main() -> color_eyre::Result<()> {
@@ -106,7 +110,8 @@ fn main() -> color_eyre::Result<()> {
             print!("{}", (&line[last_range.end..full_range.end]).red().bold());
             println!("{}", &line[full_range.end..]);
             let mut stdout = std::io::stdout();
-            if !args.no_group_names {
+            if !args.no_group_labels {
+                let mut label_lines = 0;
                 for (i, name) in re
                     .capture_names()
                     .skip(1)
@@ -119,8 +124,15 @@ fn main() -> color_eyre::Result<()> {
                 {
                     let name = match name {
                         Some(name) => name.to_string(),
-                        None => format!("group {i}"),
+                        None => {
+                            if args.ignore_unnamed_groups {
+                                continue;
+                            } else {
+                                format!("group {i}")
+                            }
+                        }
                     };
+                    label_lines += 1;
                     let range = captures.get(i).unwrap().unwrap().range();
                     if cursor::position()?.0 >= range.start as u16 {
                         println!();
@@ -129,7 +141,9 @@ fn main() -> color_eyre::Result<()> {
                     let out = format!("^{name}");
                     print!("{}", out.italic().blue());
                 }
-                println!();
+                if label_lines > 0 {
+                    println!();
+                }
             }
         }
     } else {
