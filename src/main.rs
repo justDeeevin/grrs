@@ -24,7 +24,7 @@ struct Cli {
     path: Option<PathBuf>,
 
     /// Whether to interpret the pattern as a regex
-    #[clap(long, short, group = "use_regex")]
+    #[clap(long, short)]
     regex: bool,
 
     /// Whether to use ANSI formatting.
@@ -34,8 +34,8 @@ struct Cli {
     color: Option<bool>,
 
     /// Disable the printing of capture group names (if using regex)
-    #[clap(long, requires = "use_regex")]
     no_group_names: bool,
+    #[clap(long, requires = "regex")]
 }
 
 fn main() -> color_eyre::Result<()> {
