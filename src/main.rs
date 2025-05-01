@@ -2,8 +2,7 @@ use clap::{ArgAction, Parser};
 use color_eyre::{eyre::Context, owo_colors::OwoColorize};
 use crossterm::{
     ExecutableCommand,
-    cursor::{self, MoveLeft, MoveToColumn},
-    terminal::{Clear, ClearType},
+    cursor::{self, MoveToColumn},
 };
 use regex::Regex;
 
